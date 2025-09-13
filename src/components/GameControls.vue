@@ -1,20 +1,51 @@
 <template>
-  <div class="controls">
-    <button class="btn btn--primary" @click="$emit(running ? 'reset' : 'start')">
-      {{ running ? 'Restart' : 'Start' }}
+  <div class="controls glass-panel shimmer">
+    <button 
+      class="btn btn--primary" 
+      @click="$emit(running ? 'reset' : 'start')"
+      :class="{ 'animate-shake': running }"
+    >
+      <span class="btn-icon">{{ running ? '↻' : '▶' }}</span>
+      <span class="btn-text">{{ running ? 'Restart' : 'Start' }}</span>
     </button>
-    <button class="btn btn--ghost" @click="$emit(paused ? 'resume' : 'pause')" :disabled="!running">
-      {{ paused ? 'Resume' : 'Pause' }}
+    
+    <button 
+      class="btn btn--ghost" 
+      @click="$emit(paused ? 'resume' : 'pause')" 
+      :disabled="!running"
+    >
+      <span class="btn-icon">{{ paused ? '▶' : '⏸' }}</span>
+      <span class="btn-text">{{ paused ? 'Resume' : 'Pause' }}</span>
     </button>
-    <select class="select" :value="difficulty" @change="$emit('set-difficulty', $event.target.value)">
-      <option value="easy">Speed Easy</option>
-      <option value="medium">Typer</option>
-      <option value="hard">Keyboard God</option>
-    </select>
-    <button class="btn" @click="$emit('toggle-mute')">
-      {{ muted ? 'Unmute' : 'Mute' }}
+    
+    <div class="select-wrapper">
+      <select 
+        class="select" 
+        :value="difficulty" 
+        @change="$emit('set-difficulty', $event.target.value)"
+      >
+        <option value="easy">🚀 Speed Easy</option>
+        <option value="medium">⚡ Typer</option>
+        <option value="hard">🔥 Keyboard God</option>
+      </select>
+      <div class="select-arrow">▼</div>
+    </div>
+    
+    <button 
+      class="btn" 
+      @click="$emit('toggle-mute')"
+    >
+      <span class="btn-icon">{{ muted ? '🔇' : '🔊' }}</span>
+      <span class="btn-text">{{ muted ? 'Unmute' : 'Mute' }}</span>
     </button>
-    <button class="btn" @click="$emit('toggle-fullscreen')">Full Screen</button>
+    
+    <button 
+      class="btn" 
+      @click="$emit('toggle-fullscreen')"
+    >
+      <span class="btn-icon">⛶</span>
+      <span class="btn-text">Full Screen</span>
+    </button>
   </div>
 </template>
 
@@ -28,14 +59,227 @@ defineProps({
 </script>
 
 <style scoped>
-.controls { display: flex; gap: 10px; align-items: center; padding: 8px 10px; background: linear-gradient(180deg, rgba(8,18,32,0.7), rgba(5,12,20,0.6)); border: 1px solid rgba(158,203,255,0.18); border-radius: 10px; backdrop-filter: blur(6px); box-shadow: 0 6px 20px rgba(0,0,0,0.25), inset 0 0 0 1px rgba(255,255,255,0.04); }
-.btn { background: linear-gradient(135deg, #0b5bd7, #1776ff); border: 1px solid rgba(255,255,255,0.12); color: #fff; padding: 10px 14px; border-radius: 10px; cursor: pointer; transition: transform .08s ease, box-shadow .2s ease, filter .2s ease; box-shadow: 0 6px 20px rgba(23,118,255,0.25), inset 0 0 0 1px rgba(255,255,255,0.08); text-shadow: 0 1px 0 rgba(0,0,0,0.2); }
-.btn--primary { background: linear-gradient(135deg, #12b886, #60ffa6); color: #06141f; box-shadow: 0 6px 20px rgba(96,255,166,0.25), inset 0 0 0 1px rgba(255,255,255,0.2); }
-.btn--ghost { background: linear-gradient(135deg, rgba(11,91,215,0.15), rgba(23,118,255,0.12)); color: #e7f0ff; border: 1px solid rgba(158,203,255,0.25); }
-.btn:disabled { opacity: 0.55; cursor: not-allowed; filter: grayscale(0.2); }
-.btn:hover:not(:disabled) { filter: brightness(1.05); box-shadow: 0 10px 28px rgba(23,118,255,0.35), inset 0 0 0 1px rgba(255,255,255,0.16); }
-.btn:active:not(:disabled) { transform: translateY(1px) scale(0.99); }
-.select { background: linear-gradient(180deg, rgba(10,20,35,0.85), rgba(7,16,28,0.9)); color: #e7f0ff; border: 1px solid rgba(158,203,255,0.3); border-radius: 10px; padding: 9px 12px; outline: none; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06); }
+.controls { 
+  display: flex; 
+  gap: 12px; 
+  align-items: center; 
+  padding: 16px 20px; 
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn { 
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px; 
+  border-radius: 12px; 
+  cursor: pointer; 
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+  font-weight: 600;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  min-width: 120px;
+  justify-content: center;
+}
+
+.btn-icon {
+  font-size: 16px;
+  line-height: 1;
+  transition: transform var(--transition-fast);
+}
+
+.btn-text {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.btn:hover .btn-icon {
+  transform: scale(1.1);
+}
+
+.btn:active .btn-icon {
+  transform: scale(0.95);
+}
+
+.btn--primary {
+  background: linear-gradient(135deg, #12b886, #60ffa6);
+  color: #06141f;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 
+    0 4px 16px rgba(96, 255, 166, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+.btn--primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 24px rgba(96, 255, 166, 0.4),
+    0 0 30px rgba(96, 255, 166, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  filter: brightness(1.1);
+}
+
+.btn--ghost {
+  background: linear-gradient(135deg, 
+    rgba(11, 91, 215, 0.2), 
+    rgba(23, 118, 255, 0.15)
+  );
+  color: var(--fg-primary);
+  border: 1px solid rgba(158, 203, 255, 0.3);
+  backdrop-filter: blur(10px);
+  box-shadow: 
+    0 4px 12px rgba(23, 118, 255, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.btn--ghost:hover {
+  background: linear-gradient(135deg, 
+    rgba(11, 91, 215, 0.3), 
+    rgba(23, 118, 255, 0.25)
+  );
+  border-color: var(--fg-accent);
+  box-shadow: 
+    0 6px 20px rgba(23, 118, 255, 0.3),
+    0 0 20px rgba(96, 255, 166, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.btn:disabled { 
+  opacity: 0.4; 
+  cursor: not-allowed; 
+  filter: grayscale(0.3);
+  transform: none !important;
+}
+
+.btn:active:not(:disabled) { 
+  transform: translateY(0) scale(0.98); 
+  transition: all 0.1s ease;
+}
+
+.select-wrapper { 
+  position: relative; 
+  display: inline-block;
+  min-width: 140px;
+}
+
+.select { 
+  background: linear-gradient(180deg, 
+    rgba(10, 20, 35, 0.9), 
+    rgba(7, 16, 28, 0.95)
+  );
+  color: var(--fg-primary); 
+  border: 1px solid rgba(158, 203, 255, 0.3); 
+  border-radius: 12px; 
+  padding: 12px 40px 12px 16px; 
+  outline: none; 
+  cursor: pointer; 
+  transition: all var(--transition-normal);
+  backdrop-filter: blur(10px);
+  box-shadow: 
+    inset 0 1px 3px rgba(0, 0, 0, 0.2),
+    0 2px 8px rgba(0, 0, 0, 0.1);
+  appearance: none;
+  font-weight: 500;
+  font-size: 13px;
+  width: 100%;
+}
+
+.select:hover { 
+  border-color: rgba(158, 203, 255, 0.5); 
+  box-shadow: 
+    inset 0 1px 3px rgba(0, 0, 0, 0.2),
+    0 4px 16px rgba(23, 118, 255, 0.2),
+    0 0 20px rgba(23, 118, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.select:focus { 
+  border-color: var(--fg-accent); 
+  box-shadow: 
+    inset 0 1px 3px rgba(0, 0, 0, 0.2),
+    0 0 0 3px rgba(96, 255, 166, 0.2),
+    0 0 30px rgba(96, 255, 166, 0.1);
+}
+
+.select-arrow { 
+  position: absolute; 
+  right: 12px; 
+  top: 50%; 
+  transform: translateY(-50%); 
+  pointer-events: none; 
+  color: var(--fg-secondary); 
+  font-size: 12px; 
+  transition: all var(--transition-normal);
+  font-weight: bold;
+}
+
+.select-wrapper:hover .select-arrow { 
+  transform: translateY(-50%) scale(1.2); 
+  color: var(--fg-accent);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .controls {
+    gap: 8px;
+    padding: 12px 16px;
+  }
+  
+  .btn {
+    padding: 10px 14px;
+    min-width: 100px;
+    font-size: 12px;
+  }
+  
+  .btn-text {
+    font-size: 11px;
+  }
+  
+  .select-wrapper {
+    min-width: 120px;
+  }
+  
+  .select {
+    padding: 10px 36px 10px 14px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .controls {
+    gap: 6px;
+    padding: 10px 12px;
+  }
+  
+  .btn {
+    padding: 8px 12px;
+    min-width: 80px;
+    font-size: 11px;
+  }
+  
+  .btn-text {
+    display: none;
+  }
+  
+  .btn-icon {
+    font-size: 14px;
+  }
+  
+  .select-wrapper {
+    min-width: 100px;
+  }
+  
+  .select {
+    padding: 8px 32px 8px 12px;
+    font-size: 11px;
+  }
+}
 </style>
 
 

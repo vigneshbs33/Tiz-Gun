@@ -1,38 +1,408 @@
 <template>
   <aside class="hud">
-    <div class="panel">
-      <div class="row"><span>Score</span><strong>{{ score }}</strong></div>
-      <div class="row"><span>High</span><strong>{{ highScore }}</strong></div>
-      <div class="row"><span>Lives</span><strong>{{ lives }}</strong></div>
-      <div class="row"><span>Level</span><strong>{{ level }}</strong></div>
+    <div class="panel glass-panel">
+      <div class="player-name-section">
+        <label for="player-name" class="name-label">Player Name</label>
+        <input 
+          id="player-name"
+          v-model="playerName" 
+          type="text" 
+          class="name-input input-field" 
+          placeholder="Enter your name"
+          maxlength="20"
+          @input="onNameChange"
+        />
+      </div>
+      
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-icon">🎯</div>
+          <div class="stat-content">
+            <span class="stat-label">Score</span>
+            <span class="stat-value">{{ score.toLocaleString() }}</span>
+          </div>
+        </div>
+        
+        <div class="stat-item">
+          <div class="stat-icon">🏆</div>
+          <div class="stat-content">
+            <span class="stat-label">High</span>
+            <span class="stat-value high-score">{{ highScore.toLocaleString() }}</span>
+          </div>
+        </div>
+        
+        <div class="stat-item">
+          <div class="stat-icon">❤️</div>
+          <div class="stat-content">
+            <span class="stat-label">Lives</span>
+            <span class="stat-value" :class="{ 'low-lives': lives <= 1 }">{{ lives }}</span>
+          </div>
+        </div>
+        
+        <div class="stat-item">
+          <div class="stat-icon">⚡</div>
+          <div class="stat-content">
+            <span class="stat-label">Level</span>
+            <span class="stat-value">{{ level }}</span>
+          </div>
+        </div>
+      </div>
     </div>
-    <div v-if="gameOver" class="gameover">
-      <h3>Game Over</h3>
-      <p>Your score: <strong>{{ score }}</strong></p>
-      <p>High score: <strong>{{ highScore }}</strong></p>
-      <button class="btn" @click="$emit('restart')">Restart</button>
+    
+    <div v-if="gameOver" class="gameover glass-panel animate-fade-in-scale">
+      <div class="gameover-content">
+        <h3 class="gameover-title">Game Over</h3>
+        <div class="score-display">
+          <div class="score-item">
+            <span class="score-label">Your Score</span>
+            <span class="score-value">{{ score.toLocaleString() }}</span>
+          </div>
+          <div class="score-item">
+            <span class="score-label">High Score</span>
+            <span class="score-value high-score">{{ highScore.toLocaleString() }}</span>
+          </div>
+        </div>
+        <div class="gameover-actions">
+          <button class="btn btn--primary" @click="$emit('restart')">
+            <span class="btn-icon">↻</span>
+            <span class="btn-text">Play Again</span>
+          </button>
+        </div>
+      </div>
     </div>
   </aside>
 </template>
 
 <script setup>
-defineProps({
+import { ref, onMounted } from 'vue';
+
+const props = defineProps({
   score: { type: Number, default: 0 },
   highScore: { type: Number, default: 0 },
   lives: { type: Number, default: 3 },
   level: { type: Number, default: 1 },
   gameOver: { type: Boolean, default: false }
 });
+
+const emit = defineEmits(['restart', 'name-change']);
+
+const playerName = ref('');
+
+onMounted(() => {
+  try {
+    const saved = localStorage.getItem('tizgun_player_name');
+    playerName.value = saved || '';
+  } catch {}
+});
+
+function onNameChange() {
+  try {
+    localStorage.setItem('tizgun_player_name', playerName.value);
+    emit('name-change', playerName.value);
+  } catch {}
+}
 </script>
 
 <style scoped>
-.hud { display: flex; flex-direction: column; gap: 12px; }
-.panel { background: rgba(8,18,32,0.7); border: 1px solid rgba(158,203,255,0.15); border-radius: 8px; padding: 12px; }
-.row { display: flex; align-items: center; justify-content: space-between; margin: 6px 0; }
-.row span { opacity: 0.8; }
-.gameover { background: rgba(255,55,55,0.08); border: 1px solid rgba(255,100,100,0.25); padding: 12px; border-radius: 8px; }
-.btn { background: #0b5bd7; border: none; color: #fff; padding: 8px 12px; border-radius: 6px; cursor: pointer; }
-.btn:hover { filter: brightness(1.1); }
+.hud { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 16px; 
+  min-width: 280px;
+}
+
+.panel { 
+  padding: 20px; 
+  border-radius: 16px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+.player-name-section { 
+  margin-bottom: 20px; 
+  padding-bottom: 16px; 
+  border-bottom: 1px solid rgba(158, 203, 255, 0.2);
+}
+
+.name-label { 
+  display: block; 
+  font-size: 12px; 
+  color: var(--fg-secondary); 
+  margin-bottom: 8px; 
+  text-transform: uppercase; 
+  letter-spacing: 0.5px; 
+  font-weight: 600;
+}
+
+.name-input { 
+  width: 100%; 
+  font-size: 14px; 
+  padding: 12px 16px;
+  border-radius: 10px;
+  transition: all var(--transition-normal);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all var(--transition-normal);
+}
+
+.stat-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(96, 255, 166, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(96, 255, 166, 0.1);
+}
+
+.stat-icon {
+  font-size: 20px;
+  line-height: 1;
+  filter: drop-shadow(0 0 8px rgba(96, 255, 166, 0.3));
+}
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.stat-label { 
+  font-size: 11px; 
+  color: var(--fg-secondary); 
+  text-transform: uppercase; 
+  letter-spacing: 0.5px; 
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+.stat-value { 
+  font-weight: 700; 
+  font-size: 18px; 
+  color: var(--fg-primary);
+  line-height: 1;
+}
+
+.high-score { 
+  color: var(--fg-accent);
+  text-shadow: 0 0 10px rgba(96, 255, 166, 0.3);
+}
+
+.low-lives {
+  color: var(--fg-danger);
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.gameover { 
+  background: linear-gradient(135deg, 
+    rgba(255, 55, 55, 0.1), 
+    rgba(255, 100, 100, 0.05)
+  ); 
+  border: 1px solid rgba(255, 100, 100, 0.3); 
+  padding: 24px; 
+  border-radius: 16px; 
+  box-shadow: 
+    0 8px 32px rgba(255, 55, 55, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.gameover-content { 
+  text-align: center; 
+}
+
+.gameover-title { 
+  margin: 0 0 20px 0; 
+  color: var(--fg-danger); 
+  font-size: 28px; 
+  font-weight: 800; 
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.score-display { 
+  margin: 20px 0; 
+}
+
+.score-item { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  margin: 12px 0; 
+  padding: 16px 20px; 
+  background: rgba(0, 0, 0, 0.3); 
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  transition: all var(--transition-normal);
+}
+
+.score-item:hover {
+  background: rgba(0, 0, 0, 0.4);
+  border-color: rgba(96, 255, 166, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(96, 255, 166, 0.1);
+}
+
+.score-label { 
+  color: var(--fg-secondary); 
+  font-size: 14px; 
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.score-value { 
+  font-weight: 800; 
+  font-size: 20px; 
+  color: var(--fg-primary);
+}
+
+.gameover-actions { 
+  margin-top: 24px; 
+}
+
+.btn { 
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 24px; 
+  border-radius: 12px; 
+  cursor: pointer; 
+  font-weight: 700;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #12b886, #60ffa6);
+  color: #06141f;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 
+    0 4px 16px rgba(96, 255, 166, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.btn:hover { 
+  transform: translateY(-3px); 
+  box-shadow: 
+    0 8px 24px rgba(96, 255, 166, 0.4),
+    0 0 30px rgba(96, 255, 166, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  filter: brightness(1.1);
+}
+
+.btn:active {
+  transform: translateY(-1px) scale(0.98);
+  transition: all 0.1s ease;
+}
+
+.btn-icon { 
+  font-size: 18px; 
+  line-height: 1;
+  transition: transform var(--transition-fast);
+}
+
+.btn:hover .btn-icon {
+  transform: scale(1.1);
+}
+
+.btn-text {
+  font-weight: 700;
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+  .hud {
+    min-width: 240px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .stat-item {
+    padding: 10px;
+  }
+  
+  .stat-value {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .hud {
+    min-width: 200px;
+  }
+  
+  .panel {
+    padding: 16px;
+  }
+  
+  .gameover {
+    padding: 20px;
+  }
+  
+  .gameover-title {
+    font-size: 24px;
+  }
+  
+  .score-value {
+    font-size: 18px;
+  }
+  
+  .btn {
+    padding: 12px 20px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hud {
+    min-width: auto;
+  }
+  
+  .stat-item {
+    padding: 8px;
+    gap: 8px;
+  }
+  
+  .stat-icon {
+    font-size: 16px;
+  }
+  
+  .stat-value {
+    font-size: 14px;
+  }
+  
+  .btn-text {
+    display: none;
+  }
+  
+  .btn-icon {
+    font-size: 16px;
+  }
+}
 </style>
 
 

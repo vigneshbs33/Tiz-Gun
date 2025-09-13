@@ -132,21 +132,55 @@ export class WordsManager {
     ctx.save();
     ctx.font = '600 20px Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial';
     ctx.textBaseline = 'top';
+    
     for (const w of this.words) {
       const typedWidth = ctx.measureText(w.typed).width;
       const fullWidth = ctx.measureText(w.text).width;
       w.width = fullWidth;
-      ctx.fillStyle = 'rgba(0,0,0,0.3)';
-      ctx.fillRect(w.x - 6, w.y - 4, fullWidth + 12, 28);
+      
+      // Background with subtle glow
+      ctx.save();
+      ctx.shadowColor = 'rgba(96, 255, 166, 0.1)';
+      ctx.shadowBlur = 5;
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+      ctx.fillRect(w.x - 8, w.y - 6, fullWidth + 16, 32);
+      ctx.restore();
+      
+      // Border with subtle glow
+      ctx.strokeStyle = 'rgba(96, 255, 166, 0.2)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(w.x - 8, w.y - 6, fullWidth + 16, 32);
+      
       // Un-typed part
       ctx.fillStyle = '#9ecbff';
       ctx.fillText(w.text, w.x, w.y);
+      
       // Typed overlay
       ctx.fillStyle = '#60ffa6';
       ctx.fillText(w.typed, w.x, w.y);
-      // Caret
+      
+      // Caret with subtle pulsing
+      const caretAlpha = 0.8 + 0.1 * Math.sin(Date.now() * 0.005);
+      ctx.save();
+      ctx.globalAlpha = caretAlpha;
       ctx.fillStyle = '#60ffa6';
-      ctx.fillRect(w.x + typedWidth + 1, w.y + 2, 2, 18);
+      ctx.fillRect(w.x + typedWidth + 1, w.y + 2, 2, 20);
+      ctx.restore();
+      
+      // Progress bar
+      const progress = w.typed.length / w.text.length;
+      ctx.fillStyle = 'rgba(96, 255, 166, 0.2)';
+      ctx.fillRect(w.x - 6, w.y + 26, (fullWidth + 12) * progress, 2);
+      
+      // Active target highlight
+      if (this.activeTargetId === w.id) {
+        ctx.save();
+        ctx.globalAlpha = 0.3;
+        ctx.strokeStyle = '#60ffa6';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(w.x - 10, w.y - 8, fullWidth + 20, 36);
+        ctx.restore();
+      }
     }
     ctx.restore();
   }
