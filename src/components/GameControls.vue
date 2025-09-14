@@ -24,9 +24,9 @@
         :value="difficulty" 
         @change="$emit('set-difficulty', $event.target.value)"
       >
-        <option value="easy">🚀 Speed Easy</option>
-        <option value="medium">⚡ Typer</option>
-        <option value="hard">🔥 Keyboard God</option>
+        <option value="classic">🎯 Classic</option>
+        <option value="hard">🔥 Hard</option>
+        <option value="insane">⚡ Insane</option>
       </select>
       <div class="select-arrow">▼</div>
     </div>
@@ -54,7 +54,7 @@ defineProps({
   running: { type: Boolean, default: false },
   paused: { type: Boolean, default: false },
   muted: { type: Boolean, default: false },
-  difficulty: { type: String, default: 'medium' }
+  difficulty: { type: String, default: 'classic' }
 });
 </script>
 

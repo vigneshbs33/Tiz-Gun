@@ -13,7 +13,7 @@
         <div class="loading-bar glass-panel">
           <div class="loading-progress shimmer" :style="{ width: loadingProgress + '%' }"></div>
         </div>
-        <p class="loading-text">Loading Tiz-Gun v5.0 - The ultimate cyber typing experience...</p>
+        <p class="loading-text">Loading Tiz-Gun v6.0 - The ultimate cyber typing experience...</p>
       </div>
     </div>
     
@@ -23,7 +23,7 @@
         <h1 class="title logo">
           <span class="logo__mark">▲</span>
           <span class="logo__text">Tiz-Gun</span>
-          <span class="version-badge">v5.0</span>
+          <span class="version-badge">v6.0</span>
         </h1>
         <GameControls
           :running="running"
@@ -52,9 +52,13 @@
           ref="hudRef"
           :score="score"
           :highScore="highScore"
+          :globalHighScore="globalHighScore"
           :lives="lives"
           :level="level"
           :gameOver="gameOver"
+          :newHighScore="newHighScore"
+          :newGlobalHighScore="newGlobalHighScore"
+          :difficulty="difficulty"
           @restart="onReset"
           @name-change="onNameChange"
         />
@@ -66,7 +70,7 @@
           <span> · </span>
           <a href="https://www.linkedin.com/in/vigneshbs-dev/" target="_blank" rel="noreferrer">LinkedIn</a>
           <span> · </span>
-          <span class="version">v5.0 Premium</span>
+          <span class="version">v6.0 Premium</span>
         </div>
       </footer>
     </div>
@@ -79,6 +83,7 @@ import GameCanvas from './components/GameCanvas.vue';
 import HUD from './components/HUD.vue';
 import GameControls from './components/GameControls.vue';
 import MatrixRain from './components/MatrixRain.vue';
+import { HighScoreManager } from './lib/HighScoreManager.js';
 
 const gameRef = ref(null);
 const hudRef = ref(null);
@@ -86,20 +91,42 @@ const hudRef = ref(null);
 const running = ref(false);
 const paused = ref(false);
 const muted = ref(false);
-const difficulty = ref('medium');
+const difficulty = ref('classic');
 const score = ref(0);
 const highScore = ref(0);
+const globalHighScore = ref({ name: '', score: 0, mode: '', timestamp: null });
 const lives = ref(3);
 const level = ref(1);
 const gameOver = ref(false);
 const playerName = ref('');
 const gameLoaded = ref(false);
 const loadingProgress = ref(0);
+const newHighScore = ref(false);
+const newGlobalHighScore = ref(false);
 
-onMounted(() => {
+let highScoreManager;
+
+onMounted(async () => {
+  // Initialize high score manager
+  highScoreManager = new HighScoreManager();
+  
+  // Load current mode's high score
+  const currentHighScore = highScoreManager.getHighScore(difficulty.value);
+  highScore.value = currentHighScore.score;
+  
+  // Load global high score (async)
   try {
-    const saved = localStorage.getItem('tizgun_high_score');
-    highScore.value = saved ? Number(saved) : 0;
+    const currentGlobalHighScore = await highScoreManager.getGlobalHighScore();
+    globalHighScore.value = currentGlobalHighScore;
+  } catch (error) {
+    console.warn('Failed to load global high score:', error);
+    globalHighScore.value = { name: '', score: 0, mode: '', timestamp: null };
+  }
+  
+  // Load player name
+  try {
+    const saved = localStorage.getItem('tizgun_player_name');
+    playerName.value = saved || '';
   } catch {}
   
   // Simulate loading progress
@@ -120,10 +147,29 @@ function onGameState(payload) {
   lives.value = payload.lives;
   level.value = payload.level;
   gameOver.value = payload.gameOver;
-  if (payload.highScore != null) {
-    highScore.value = payload.highScore;
-  }
   
+  // Check for new high score when game ends
+  if (payload.gameOver && highScoreManager) {
+    try {
+      const result = await highScoreManager.updateHighScore(
+        difficulty.value, 
+        playerName.value, 
+        score.value
+      );
+      newHighScore.value = result.modeHigh;
+      newGlobalHighScore.value = result.globalHigh;
+      
+      // Update current high score display
+      const currentHighScore = highScoreManager.getHighScore(difficulty.value);
+      highScore.value = currentHighScore.score;
+      
+      // Update global high score display
+      const currentGlobalHighScore = await highScoreManager.getGlobalHighScore();
+      globalHighScore.value = currentGlobalHighScore;
+    } catch (error) {
+      console.warn('Failed to update high scores:', error);
+    }
+  }
 }
 
 function onStart() {
@@ -159,6 +205,12 @@ function onToggleFullscreen() {
 function onSetDifficulty(mode) {
   difficulty.value = mode;
   gameRef.value?.setDifficulty?.(mode);
+  
+  // Update high score display for new mode
+  if (highScoreManager) {
+    const currentHighScore = highScoreManager.getHighScore(mode);
+    highScore.value = currentHighScore.score;
+  }
 }
 
 function onNameChange(name) {

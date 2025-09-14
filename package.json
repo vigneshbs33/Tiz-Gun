@@ -10,7 +10,8 @@
   },
   "dependencies": {
     "vue": "^3.4.38",
-    "gsap": "^3.12.2"
+    "gsap": "^3.12.2",
+    "@vercel/kv": "^1.0.1"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.1.2",

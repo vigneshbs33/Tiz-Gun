@@ -1,6 +1,14 @@
 <template>
   <aside class="hud">
     <div class="panel glass-panel">
+      <div class="hud-header">
+        <div class="hud-logo">
+          <span class="logo-mark">▲</span>
+          <span class="logo-text">Tiz-Gun</span>
+        </div>
+        <div class="version-badge">v6.0</div>
+      </div>
+      
       <div class="player-name-section">
         <label for="player-name" class="name-label">Player Name</label>
         <input 
@@ -24,14 +32,6 @@
         </div>
         
         <div class="stat-item">
-          <div class="stat-icon">🏆</div>
-          <div class="stat-content">
-            <span class="stat-label">High</span>
-            <span class="stat-value high-score">{{ highScore.toLocaleString() }}</span>
-          </div>
-        </div>
-        
-        <div class="stat-item">
           <div class="stat-icon">❤️</div>
           <div class="stat-content">
             <span class="stat-label">Lives</span>
@@ -51,15 +51,33 @@
     
     <div v-if="gameOver" class="gameover glass-panel animate-fade-in-scale">
       <div class="gameover-content">
-        <h3 class="gameover-title">Game Over</h3>
+        <h3 class="gameover-title">
+          {{ (newHighScore || newGlobalHighScore) ? 'New High Score!' : 'Game Over' }}
+        </h3>
+        <div v-if="newGlobalHighScore" class="new-global-high-score-badge">
+          <span class="badge-icon">🌍</span>
+          <span class="badge-text">New Global High Score!</span>
+        </div>
+        <div v-else-if="newHighScore" class="new-high-score-badge">
+          <span class="badge-icon">🏆</span>
+          <span class="badge-text">New High Score in {{ difficulty.toUpperCase() }} Mode!</span>
+        </div>
         <div class="score-display">
           <div class="score-item">
             <span class="score-label">Your Score</span>
-            <span class="score-value">{{ score.toLocaleString() }}</span>
+            <span class="score-value" :class="{ 'new-high': (newHighScore || newGlobalHighScore) }">{{ score.toLocaleString() }}</span>
           </div>
           <div class="score-item">
-            <span class="score-label">High Score</span>
+            <span class="score-label">{{ difficulty.toUpperCase() }} High Score</span>
             <span class="score-value high-score">{{ highScore.toLocaleString() }}</span>
+          </div>
+          <div class="score-item global-high-score">
+            <span class="score-label">Global High Score</span>
+            <div class="global-high-content">
+              <span class="score-value global-high" :class="{ 'new-global': newGlobalHighScore }">{{ globalHighScore.score.toLocaleString() }}</span>
+              <span v-if="globalHighScore.name" class="global-high-name">by {{ globalHighScore.name }}</span>
+              <span v-if="globalHighScore.mode" class="global-high-mode">({{ globalHighScore.mode.toUpperCase() }})</span>
+            </div>
           </div>
         </div>
         <div class="gameover-actions">
@@ -79,9 +97,13 @@ import { ref, onMounted } from 'vue';
 const props = defineProps({
   score: { type: Number, default: 0 },
   highScore: { type: Number, default: 0 },
+  globalHighScore: { type: Object, default: () => ({ name: '', score: 0, mode: '', timestamp: null }) },
   lives: { type: Number, default: 3 },
   level: { type: Number, default: 1 },
-  gameOver: { type: Boolean, default: false }
+  gameOver: { type: Boolean, default: false },
+  newHighScore: { type: Boolean, default: false },
+  newGlobalHighScore: { type: Boolean, default: false },
+  difficulty: { type: String, default: 'classic' }
 });
 
 const emit = defineEmits(['restart', 'name-change']);
@@ -122,6 +144,66 @@ function onNameChange() {
     0 8px 32px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.1),
     inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+.hud-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(158, 203, 255, 0.2);
+}
+
+.hud-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Orbitron', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial;
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.logo-mark {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  line-height: 20px;
+  text-align: center;
+  background: linear-gradient(135deg, #12b886, #60ffa6);
+  color: #06141f;
+  border-radius: 6px;
+  box-shadow: 
+    0 3px 10px rgba(96, 255, 166, 0.3),
+    0 0 15px rgba(96, 255, 166, 0.2);
+  animation: pop 2.8s ease-in-out infinite;
+  font-weight: 900;
+  font-size: 12px;
+}
+
+.logo-text {
+  background: linear-gradient(135deg, #e7f0ff, #9ecbff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 800;
+}
+
+.version-badge {
+  background: linear-gradient(135deg, #60ffa6, #12b886);
+  color: #06141f;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 
+    0 2px 6px rgba(96, 255, 166, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  animation: neonPulse 2s ease-in-out infinite;
 }
 
 .player-name-section { 
@@ -206,6 +288,20 @@ function onNameChange() {
   text-shadow: 0 0 10px rgba(96, 255, 166, 0.3);
 }
 
+.global-stat {
+  background: linear-gradient(135deg, 
+    rgba(255, 215, 0, 0.05), 
+    rgba(255, 165, 0, 0.02)
+  );
+  border: 1px solid rgba(255, 215, 0, 0.1);
+}
+
+.global-stat .stat-value {
+  color: #ffd700;
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
+}
+
+
 .low-lives {
   color: var(--fg-danger);
   animation: pulse 1s ease-in-out infinite;
@@ -239,6 +335,80 @@ function onNameChange() {
   font-weight: 800; 
   text-transform: uppercase;
   letter-spacing: 1px;
+}
+
+.new-high-score-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 0 20px 0;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, 
+    rgba(96, 255, 166, 0.2), 
+    rgba(18, 184, 134, 0.15)
+  );
+  border: 1px solid rgba(96, 255, 166, 0.4);
+  border-radius: 12px;
+  animation: glow 2s ease-in-out infinite;
+}
+
+.new-global-high-score-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 0 20px 0;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, 
+    rgba(255, 215, 0, 0.2), 
+    rgba(255, 165, 0, 0.15)
+  );
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  border-radius: 12px;
+  animation: glow 2s ease-in-out infinite;
+}
+
+.badge-icon {
+  font-size: 20px;
+  animation: bounce 1s ease-in-out infinite;
+}
+
+.badge-text {
+  color: var(--fg-accent);
+  font-weight: 700;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 10px rgba(96, 255, 166, 0.5);
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+@keyframes pop {
+  0%, 100% { 
+    transform: translateY(0) scale(1); 
+  }
+  50% { 
+    transform: translateY(-2px) scale(1.05); 
+  }
+}
+
+@keyframes neonPulse {
+  0%, 100% { 
+    box-shadow: 
+      0 2px 6px rgba(96, 255, 166, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  }
+  50% { 
+    box-shadow: 
+      0 4px 12px rgba(96, 255, 166, 0.4),
+      0 0 20px rgba(96, 255, 166, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  }
 }
 
 .score-display { 
@@ -277,6 +447,54 @@ function onNameChange() {
   font-weight: 800; 
   font-size: 20px; 
   color: var(--fg-primary);
+}
+
+.score-value.new-high {
+  color: var(--fg-accent);
+  text-shadow: 0 0 15px rgba(96, 255, 166, 0.6);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.global-high-score {
+  background: linear-gradient(135deg, 
+    rgba(255, 215, 0, 0.1), 
+    rgba(255, 165, 0, 0.05)
+  );
+  border: 1px solid rgba(255, 215, 0, 0.2);
+}
+
+.global-high-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.global-high-name {
+  font-size: 12px;
+  color: #ffd700;
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+.global-high-mode {
+  font-size: 10px;
+  color: #ffd700;
+  font-weight: 500;
+  opacity: 0.6;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.global-high {
+  color: #ffd700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+}
+
+.score-value.new-global {
+  color: #ffd700;
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+  animation: pulse 1.5s ease-in-out infinite;
 }
 
 .gameover-actions { 

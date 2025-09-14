@@ -1,5 +1,5 @@
 <template>
-  <div class="game" @click="focusForInput">
+  <div class="game" @click="focusForInput" @touchstart="handleTouchStart">
     <canvas ref="canvasRef" class="game__canvas" />
     <img class="game__img game__img--secondary" src="/assets/cool-img-1.png" alt="decor" />
     <input
@@ -9,6 +9,8 @@
       autocorrect="off"
       autocapitalize="none"
       spellcheck="false"
+      inputmode="text"
+      enterkeyhint="done"
     />
   </div>
 </template>
@@ -73,14 +75,28 @@ function resizeCanvas() {
   if (!canvas) return;
   const rect = canvas.getBoundingClientRect();
   const scale = dpi();
-  canvas.width = Math.floor(rect.width * scale);
-  canvas.height = Math.floor(rect.height * scale);
+  
+  // Mobile-friendly sizing
+  const isMobile = window.innerWidth <= 768;
+  const minWidth = isMobile ? 300 : 400;
+  const minHeight = isMobile ? 200 : 300;
+  
+  const width = Math.max(minWidth, rect.width);
+  const height = Math.max(minHeight, rect.height);
+  
+  canvas.width = Math.floor(width * scale);
+  canvas.height = Math.floor(height * scale);
   ctx = canvas.getContext('2d');
   ctx.setTransform(scale, 0, 0, scale, 0, 0);
 }
 
 function focusForInput() {
   hiddenInputRef.value?.focus();
+}
+
+function handleTouchStart(e) {
+  e.preventDefault();
+  focusForInput();
 }
 
 function handleKeydown(e) {
@@ -525,6 +541,8 @@ onBeforeUnmount(() => {
   display: block; 
   width: 100%; 
   height: 60vh; 
+  min-height: 300px;
+  max-height: 80vh;
   border-radius: 16px;
   image-rendering: optimizeSpeed;
   image-rendering: -moz-crisp-edges;
@@ -595,8 +613,14 @@ onBeforeUnmount(() => {
     drop-shadow(0 0 30px rgba(255, 0, 255, 0.3));
 }
 
-/* Responsive design */
+/* Mobile-specific improvements */
 @media (max-width: 768px) {
+  .game__canvas {
+    height: 50vh;
+    min-height: 250px;
+    max-height: 70vh;
+  }
+  
   .game__img {
     width: 80px;
     height: 80px;
@@ -613,6 +637,12 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 480px) {
+  .game__canvas {
+    height: 45vh;
+    min-height: 200px;
+    max-height: 60vh;
+  }
+  
   .game__img {
     width: 60px;
     height: 60px;
@@ -625,6 +655,20 @@ onBeforeUnmount(() => {
     height: 40px;
     right: 15px;
     bottom: 15px;
+  }
+}
+
+/* Touch-friendly improvements */
+@media (hover: none) and (pointer: coarse) {
+  .game {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  
+  .game__canvas {
+    touch-action: manipulation;
   }
 }
 </style>

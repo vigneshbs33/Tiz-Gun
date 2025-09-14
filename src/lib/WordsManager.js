@@ -27,19 +27,19 @@ export class WordsManager {
     this.activeTargetId = null; // word receiving typed letters
     this.wordList = options.wordList || DEFAULT_WORDS;
     this.missedCount = 0;
-    this.difficulty = 'medium'; // 'easy' | 'medium' | 'hard'
+    this.difficulty = 'classic'; // 'classic' | 'hard' | 'insane'
   }
 
   setDifficulty(mode) {
-    this.difficulty = mode || 'medium';
+    this.difficulty = mode || 'classic';
     // Recalculate based on current level
     this.setLevel(this.level);
   }
 
   setLevel(level) {
     this.level = level;
-    const diffSpeedMul = this.difficulty === 'easy' ? 0.55 : this.difficulty === 'hard' ? 1.4 : 1.0;
-    const diffSpawnMul = this.difficulty === 'easy' ? 1.6 : this.difficulty === 'hard' ? 0.7 : 1.0;
+    const diffSpeedMul = this.difficulty === 'classic' ? 0.8 : this.difficulty === 'hard' ? 1.2 : 1.6;
+    const diffSpawnMul = this.difficulty === 'classic' ? 1.4 : this.difficulty === 'hard' ? 1.0 : 0.6;
     const baseSpeed = 52 * diffSpeedMul;
     const perLevel = 9 * diffSpeedMul;
     this.speed = baseSpeed + (level - 1) * perLevel;
@@ -130,55 +130,84 @@ export class WordsManager {
 
   draw(ctx) {
     ctx.save();
-    ctx.font = '600 20px Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial';
+    
+    // Dynamic font sizing based on speed/level for better readability
+    const baseFontSize = 20;
+    const speedMultiplier = Math.min(1.2, 1 + (this.speed - 60) / 200);
+    const fontSize = Math.max(16, baseFontSize * speedMultiplier);
+    
+    // Use monospace font for better readability
+    ctx.font = `700 ${fontSize}px 'JetBrains Mono', 'Roboto Mono', 'Consolas', 'Monaco', 'Courier New', monospace`;
     ctx.textBaseline = 'top';
+    ctx.textAlign = 'left';
     
     for (const w of this.words) {
       const typedWidth = ctx.measureText(w.typed).width;
       const fullWidth = ctx.measureText(w.text).width;
       w.width = fullWidth;
       
-      // Background with subtle glow
+      // Enhanced background with better contrast
+      const padding = 12;
+      const height = fontSize + 8;
+      
       ctx.save();
-      ctx.shadowColor = 'rgba(96, 255, 166, 0.1)';
-      ctx.shadowBlur = 5;
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
-      ctx.fillRect(w.x - 8, w.y - 6, fullWidth + 16, 32);
+      ctx.shadowColor = 'rgba(96, 255, 166, 0.15)';
+      ctx.shadowBlur = 8;
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+      ctx.fillRect(w.x - padding, w.y - 4, fullWidth + (padding * 2), height);
       ctx.restore();
       
-      // Border with subtle glow
-      ctx.strokeStyle = 'rgba(96, 255, 166, 0.2)';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(w.x - 8, w.y - 6, fullWidth + 16, 32);
+      // Enhanced border with better visibility
+      ctx.strokeStyle = 'rgba(96, 255, 166, 0.3)';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(w.x - padding, w.y - 4, fullWidth + (padding * 2), height);
       
-      // Un-typed part
-      ctx.fillStyle = '#9ecbff';
+      // Un-typed part with better contrast and letter spacing
+      ctx.save();
+      ctx.fillStyle = '#e7f0ff';
+      ctx.shadowColor = 'rgba(231, 240, 255, 0.3)';
+      ctx.shadowBlur = 2;
+      ctx.letterSpacing = '0.5px';
       ctx.fillText(w.text, w.x, w.y);
+      ctx.restore();
       
-      // Typed overlay
+      // Typed overlay with enhanced visibility
+      ctx.save();
       ctx.fillStyle = '#60ffa6';
+      ctx.shadowColor = 'rgba(96, 255, 166, 0.4)';
+      ctx.shadowBlur = 3;
+      ctx.letterSpacing = '0.5px';
       ctx.fillText(w.typed, w.x, w.y);
+      ctx.restore();
       
-      // Caret with subtle pulsing
-      const caretAlpha = 0.8 + 0.1 * Math.sin(Date.now() * 0.005);
+      // Enhanced caret with better visibility
+      const caretAlpha = 0.9 + 0.1 * Math.sin(Date.now() * 0.005);
       ctx.save();
       ctx.globalAlpha = caretAlpha;
       ctx.fillStyle = '#60ffa6';
-      ctx.fillRect(w.x + typedWidth + 1, w.y + 2, 2, 20);
+      ctx.shadowColor = 'rgba(96, 255, 166, 0.6)';
+      ctx.shadowBlur = 4;
+      ctx.fillRect(w.x + typedWidth + 2, w.y + 2, 3, fontSize - 4);
       ctx.restore();
       
-      // Progress bar
+      // Enhanced progress bar
       const progress = w.typed.length / w.text.length;
-      ctx.fillStyle = 'rgba(96, 255, 166, 0.2)';
-      ctx.fillRect(w.x - 6, w.y + 26, (fullWidth + 12) * progress, 2);
+      ctx.save();
+      ctx.fillStyle = 'rgba(96, 255, 166, 0.3)';
+      ctx.shadowColor = 'rgba(96, 255, 166, 0.2)';
+      ctx.shadowBlur = 2;
+      ctx.fillRect(w.x - padding + 2, w.y + height - 2, (fullWidth + (padding * 2) - 4) * progress, 3);
+      ctx.restore();
       
-      // Active target highlight
+      // Enhanced active target highlight
       if (this.activeTargetId === w.id) {
         ctx.save();
-        ctx.globalAlpha = 0.3;
+        ctx.globalAlpha = 0.4;
         ctx.strokeStyle = '#60ffa6';
         ctx.lineWidth = 2;
-        ctx.strokeRect(w.x - 10, w.y - 8, fullWidth + 20, 36);
+        ctx.shadowColor = 'rgba(96, 255, 166, 0.3)';
+        ctx.shadowBlur = 6;
+        ctx.strokeRect(w.x - padding - 2, w.y - 6, fullWidth + (padding * 2) + 4, height + 4);
         ctx.restore();
       }
     }
