@@ -2,6 +2,8 @@
 import { kv } from '@vercel/kv';
 
 export default async function handler(req, res) {
+  console.log('API called:', req.method, req.url);
+  
   // Enable CORS for all origins
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
