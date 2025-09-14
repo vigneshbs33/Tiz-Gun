@@ -52,32 +52,20 @@
     <div v-if="gameOver" class="gameover glass-panel animate-fade-in-scale">
       <div class="gameover-content">
         <h3 class="gameover-title">
-          {{ (newHighScore || newGlobalHighScore) ? 'New High Score!' : 'Game Over' }}
+          {{ newHighScore ? 'New High Score!' : 'Game Over' }}
         </h3>
-        <div v-if="newGlobalHighScore" class="new-global-high-score-badge">
-          <span class="badge-icon">🌍</span>
-          <span class="badge-text">New Global High Score!</span>
-        </div>
-        <div v-else-if="newHighScore" class="new-high-score-badge">
+        <div v-if="newHighScore" class="new-high-score-badge">
           <span class="badge-icon">🏆</span>
           <span class="badge-text">New High Score in {{ difficulty.toUpperCase() }} Mode!</span>
         </div>
         <div class="score-display">
           <div class="score-item">
             <span class="score-label">Your Score</span>
-            <span class="score-value" :class="{ 'new-high': (newHighScore || newGlobalHighScore) }">{{ score.toLocaleString() }}</span>
+            <span class="score-value" :class="{ 'new-high': newHighScore }">{{ score.toLocaleString() }}</span>
           </div>
           <div class="score-item">
             <span class="score-label">{{ difficulty.toUpperCase() }} High Score</span>
             <span class="score-value high-score">{{ highScore.toLocaleString() }}</span>
-          </div>
-          <div class="score-item global-high-score">
-            <span class="score-label">Global High Score</span>
-            <div class="global-high-content">
-              <span class="score-value global-high" :class="{ 'new-global': newGlobalHighScore }">{{ globalHighScore.score.toLocaleString() }}</span>
-              <span v-if="globalHighScore.name" class="global-high-name">by {{ globalHighScore.name }}</span>
-              <span v-if="globalHighScore.mode" class="global-high-mode">({{ globalHighScore.mode.toUpperCase() }})</span>
-            </div>
           </div>
         </div>
         <div class="gameover-actions">
@@ -296,18 +284,6 @@ function onNameChange() {
   text-shadow: 0 0 10px rgba(96, 255, 166, 0.4);
 }
 
-.global-stat {
-  background: linear-gradient(135deg, 
-    rgba(255, 215, 0, 0.05), 
-    rgba(255, 165, 0, 0.02)
-  );
-  border: 1px solid rgba(255, 215, 0, 0.1);
-}
-
-.global-stat .stat-value {
-  color: #ffd700;
-  text-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
-}
 
 
 .low-lives {
@@ -381,21 +357,6 @@ function onNameChange() {
   animation: glow 2s ease-in-out infinite;
 }
 
-.new-global-high-score-badge {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin: 0 0 20px 0;
-  padding: 12px 20px;
-  background: linear-gradient(135deg, 
-    rgba(255, 215, 0, 0.2), 
-    rgba(255, 165, 0, 0.15)
-  );
-  border: 1px solid rgba(255, 215, 0, 0.4);
-  border-radius: 12px;
-  animation: glow 2s ease-in-out infinite;
-}
 
 .badge-icon {
   font-size: 20px;
@@ -503,47 +464,6 @@ function onNameChange() {
   animation: pulse 1.5s ease-in-out infinite;
 }
 
-.global-high-score {
-  background: linear-gradient(135deg, 
-    rgba(255, 215, 0, 0.1), 
-    rgba(255, 165, 0, 0.05)
-  );
-  border: 1px solid rgba(255, 215, 0, 0.2);
-}
-
-.global-high-content {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
-}
-
-.global-high-name {
-  font-size: 12px;
-  color: #ffd700;
-  font-weight: 600;
-  opacity: 0.8;
-}
-
-.global-high-mode {
-  font-size: 10px;
-  color: #ffd700;
-  font-weight: 500;
-  opacity: 0.6;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.global-high {
-  color: #ffd700;
-  text-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
-}
-
-.score-value.new-global {
-  color: #ffd700;
-  text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
-  animation: pulse 1.5s ease-in-out infinite;
-}
 
 .gameover-actions { 
   margin-top: 24px; 
