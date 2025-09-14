@@ -321,25 +321,25 @@ function onNameChange(name) {
 
 .app__main {
   display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: 20px;
-  padding: 20px;
+  grid-template-columns: 1fr 360px;
+  gap: 24px;
+  padding: 24px;
   flex: 1;
 }
 
 @media (max-width: 1024px) {
   .app__main {
     grid-template-columns: 1fr;
-    gap: 16px;
+    gap: 20px;
   }
 }
 
 .game-container {
   position: relative;
-  border-radius: 16px;
+  border-radius: 20px;
   overflow: hidden;
   box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.3),
+    0 12px 40px rgba(0, 0, 0, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
