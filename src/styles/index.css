@@ -292,6 +292,15 @@ canvas {
   font-weight: 500;
 }
 
+/* Fix dropdown options styling */
+.select option {
+  background: rgba(10, 20, 35, 0.95);
+  color: var(--fg-primary);
+  border: none;
+  padding: 8px 12px;
+  font-weight: 500;
+}
+
 .select:hover {
   border-color: rgba(158, 203, 255, 0.5);
   box-shadow: 

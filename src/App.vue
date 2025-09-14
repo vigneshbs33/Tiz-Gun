@@ -49,6 +49,7 @@
           />
         </div>
         <HUD
+          ref="hudRef"
           :score="score"
           :highScore="highScore"
           :lives="lives"
@@ -80,6 +81,7 @@ import GameControls from './components/GameControls.vue';
 import MatrixRain from './components/MatrixRain.vue';
 
 const gameRef = ref(null);
+const hudRef = ref(null);
 
 const running = ref(false);
 const paused = ref(false);
@@ -121,6 +123,15 @@ function onGameState(payload) {
   if (payload.highScore != null) {
     highScore.value = payload.highScore;
   }
+  
+  // Check for new global high score when game ends
+  if (payload.gameOver && score.value > 0) {
+    console.log('Checking global high score:', { score: score.value, playerName: playerName.value });
+    const isNewGlobalHigh = hudRef.value?.updateGlobalHighScore(score.value, playerName.value);
+    if (isNewGlobalHigh) {
+      console.log(`🎉 New Global High Score! ${playerName.value}: ${score.value}`);
+    }
+  }
 }
 
 function onStart() {
@@ -160,6 +171,7 @@ function onSetDifficulty(mode) {
 
 function onNameChange(name) {
   playerName.value = name;
+  console.log('Player name updated:', name); // Debug log
 }
 </script>
 

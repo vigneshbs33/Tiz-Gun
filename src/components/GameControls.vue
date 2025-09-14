@@ -1,5 +1,5 @@
 <template>
-  <div class="controls glass-panel shimmer">
+  <div class="controls glass-panel">
     <button 
       class="btn btn--primary" 
       @click="$emit(running ? 'reset' : 'start')"

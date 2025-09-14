@@ -86,7 +86,7 @@ function focusForInput() {
 function handleKeydown(e) {
   if (!running || paused || state.gameOver) return;
   const key = e.key;
-  if (key.length === 1 && /[a-zA-Z]/.test(key)) {
+  if (key.length === 1 && /[a-zA-Z0-9]/.test(key)) {
     const letter = key.toLowerCase();
     const result = wordsManager.typeLetter(letter);
     if (result.hit) {
