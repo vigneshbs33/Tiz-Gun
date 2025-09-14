@@ -143,6 +143,7 @@ onMounted(async () => {
 });
 
 async function onGameState(payload) {
+  console.log('Game state update:', payload);
   score.value = payload.score;
   lives.value = payload.lives;
   level.value = payload.level;

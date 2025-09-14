@@ -13,122 +13,47 @@ export class GlobalLeaderboardService {
   }
 
   async getGlobalHighScore() {
-    // In development, use localStorage fallback
-    if (this.isDevelopment) {
-      try {
-        const saved = localStorage.getItem('tizgun_dev_global_high_score');
-        if (saved) {
-          return JSON.parse(saved);
-        }
-      } catch (error) {
-        console.warn('Failed to load dev global high score:', error);
-      }
-      return { name: '', score: 0, mode: '', timestamp: null };
-    }
-
-    // Return cached data if still fresh
-    const now = Date.now();
-    if (this.cache.globalHighScore && (now - this.cache.lastFetch) < this.cache.cacheTimeout) {
-      return this.cache.globalHighScore;
-    }
-
+    // Always use localStorage fallback for now (until API is fixed)
     try {
-      const response = await fetch(this.apiUrl, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      const saved = localStorage.getItem('tizgun_global_high_score');
+      if (saved) {
+        return JSON.parse(saved);
       }
-
-      const data = await response.json();
-      
-      // Update cache
-      this.cache.globalHighScore = data;
-      this.cache.lastFetch = now;
-      
-      return data;
     } catch (error) {
-      console.warn('Failed to fetch global high score:', error);
-      // Return cached data or default if no cache
-      return this.cache.globalHighScore || {
-        name: '',
-        score: 0,
-        mode: '',
-        timestamp: null
-      };
+      console.warn('Failed to load global high score:', error);
     }
+    return { name: '', score: 0, mode: '', timestamp: null };
   }
 
   async updateGlobalHighScore(name, score, mode) {
-    // In development, use localStorage fallback
-    if (this.isDevelopment) {
-      try {
-        const currentGlobal = await this.getGlobalHighScore();
+    // Always use localStorage fallback for now (until API is fixed)
+    try {
+      const currentGlobal = await this.getGlobalHighScore();
+      
+      if (score > currentGlobal.score) {
+        const newGlobalHigh = {
+          name: name || 'Anonymous',
+          score: score,
+          mode: mode,
+          timestamp: new Date().toISOString()
+        };
         
-        if (score > currentGlobal.score) {
-          const newGlobalHigh = {
-            name: name || 'Anonymous',
-            score: score,
-            mode: mode,
-            timestamp: new Date().toISOString()
-          };
-          
-          localStorage.setItem('tizgun_dev_global_high_score', JSON.stringify(newGlobalHigh));
-          this.cache.globalHighScore = newGlobalHigh;
-          this.cache.lastFetch = Date.now();
-          
-          return {
-            success: true,
-            isNewHigh: true,
-            globalHighScore: newGlobalHigh
-          };
-        }
+        localStorage.setItem('tizgun_global_high_score', JSON.stringify(newGlobalHigh));
+        this.cache.globalHighScore = newGlobalHigh;
+        this.cache.lastFetch = Date.now();
         
         return {
           success: true,
-          isNewHigh: false,
-          globalHighScore: currentGlobal
-        };
-      } catch (error) {
-        console.warn('Failed to update dev global high score:', error);
-        return {
-          success: false,
-          isNewHigh: false,
-          error: error.message
+          isNewHigh: true,
+          globalHighScore: newGlobalHigh
         };
       }
-    }
-
-    try {
-      const response = await fetch(this.apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: name || 'Anonymous',
-          score: score,
-          mode: mode
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
       
-      // Update cache if successful
-      if (data.success) {
-        this.cache.globalHighScore = data.globalHighScore;
-        this.cache.lastFetch = Date.now();
-      }
-      
-      return data;
+      return {
+        success: true,
+        isNewHigh: false,
+        globalHighScore: currentGlobal
+      };
     } catch (error) {
       console.warn('Failed to update global high score:', error);
       return {
