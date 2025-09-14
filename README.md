@@ -39,6 +39,7 @@ npm run preview
 ### Project Structure
 
 ```
+
 .
 ├─ index.html
 ├─ package.json
