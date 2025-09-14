@@ -142,7 +142,7 @@ onMounted(async () => {
   }, 100);
 });
 
-function onGameState(payload) {
+async function onGameState(payload) {
   score.value = payload.score;
   lives.value = payload.lives;
   level.value = payload.level;
