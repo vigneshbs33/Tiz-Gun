@@ -9,9 +9,23 @@ export class GlobalLeaderboardService {
       lastFetch: 0,
       cacheTimeout: 30000 // 30 seconds cache
     };
+    this.isDevelopment = import.meta.env.DEV;
   }
 
   async getGlobalHighScore() {
+    // In development, use localStorage fallback
+    if (this.isDevelopment) {
+      try {
+        const saved = localStorage.getItem('tizgun_dev_global_high_score');
+        if (saved) {
+          return JSON.parse(saved);
+        }
+      } catch (error) {
+        console.warn('Failed to load dev global high score:', error);
+      }
+      return { name: '', score: 0, mode: '', timestamp: null };
+    }
+
     // Return cached data if still fresh
     const now = Date.now();
     if (this.cache.globalHighScore && (now - this.cache.lastFetch) < this.cache.cacheTimeout) {
@@ -50,6 +64,45 @@ export class GlobalLeaderboardService {
   }
 
   async updateGlobalHighScore(name, score, mode) {
+    // In development, use localStorage fallback
+    if (this.isDevelopment) {
+      try {
+        const currentGlobal = await this.getGlobalHighScore();
+        
+        if (score > currentGlobal.score) {
+          const newGlobalHigh = {
+            name: name || 'Anonymous',
+            score: score,
+            mode: mode,
+            timestamp: new Date().toISOString()
+          };
+          
+          localStorage.setItem('tizgun_dev_global_high_score', JSON.stringify(newGlobalHigh));
+          this.cache.globalHighScore = newGlobalHigh;
+          this.cache.lastFetch = Date.now();
+          
+          return {
+            success: true,
+            isNewHigh: true,
+            globalHighScore: newGlobalHigh
+          };
+        }
+        
+        return {
+          success: true,
+          isNewHigh: false,
+          globalHighScore: currentGlobal
+        };
+      } catch (error) {
+        console.warn('Failed to update dev global high score:', error);
+        return {
+          success: false,
+          isNewHigh: false,
+          error: error.message
+        };
+      }
+    }
+
     try {
       const response = await fetch(this.apiUrl, {
         method: 'POST',
