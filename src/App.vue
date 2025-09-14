@@ -13,7 +13,7 @@
         <div class="loading-bar glass-panel">
           <div class="loading-progress shimmer" :style="{ width: loadingProgress + '%' }"></div>
         </div>
-        <p class="loading-text">Loading the ultimate cyber typing experience...</p>
+        <p class="loading-text">Loading Tiz-Gun v5.0 - The ultimate cyber typing experience...</p>
       </div>
     </div>
     
@@ -23,7 +23,7 @@
         <h1 class="title logo">
           <span class="logo__mark">▲</span>
           <span class="logo__text">Tiz-Gun</span>
-          <span class="version-badge">v3.0</span>
+          <span class="version-badge">v5.0</span>
         </h1>
         <GameControls
           :running="running"
@@ -66,7 +66,7 @@
           <span> · </span>
           <a href="https://www.linkedin.com/in/vigneshbs-dev/" target="_blank" rel="noreferrer">LinkedIn</a>
           <span> · </span>
-          <span class="version">v3.0 Premium</span>
+          <span class="version">v5.0 Premium</span>
         </div>
       </footer>
     </div>
@@ -124,14 +124,6 @@ function onGameState(payload) {
     highScore.value = payload.highScore;
   }
   
-  // Check for new global high score when game ends
-  if (payload.gameOver && score.value > 0) {
-    console.log('Checking global high score:', { score: score.value, playerName: playerName.value });
-    const isNewGlobalHigh = hudRef.value?.updateGlobalHighScore(score.value, playerName.value);
-    if (isNewGlobalHigh) {
-      console.log(`🎉 New Global High Score! ${playerName.value}: ${score.value}`);
-    }
-  }
 }
 
 function onStart() {
@@ -171,7 +163,6 @@ function onSetDifficulty(mode) {
 
 function onNameChange(name) {
   playerName.value = name;
-  console.log('Player name updated:', name); // Debug log
 }
 </script>
 

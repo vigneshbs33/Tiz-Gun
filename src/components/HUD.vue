@@ -58,15 +58,8 @@
             <span class="score-value">{{ score.toLocaleString() }}</span>
           </div>
           <div class="score-item">
-            <span class="score-label">Your Best</span>
+            <span class="score-label">High Score</span>
             <span class="score-value high-score">{{ highScore.toLocaleString() }}</span>
-          </div>
-          <div class="score-item global-champion">
-            <span class="score-label">🏆 Global Champion</span>
-            <div class="champion-details">
-              <span class="champion-name">{{ globalHighScore.name }}</span>
-              <span class="champion-score">{{ globalHighScore.score.toLocaleString() }}</span>
-            </div>
           </div>
         </div>
         <div class="gameover-actions">
@@ -94,18 +87,11 @@ const props = defineProps({
 const emit = defineEmits(['restart', 'name-change']);
 
 const playerName = ref('');
-const globalHighScore = ref({ name: 'Anonymous', score: 0 });
 
 onMounted(() => {
   try {
     const saved = localStorage.getItem('tizgun_player_name');
     playerName.value = saved || '';
-    
-    // Load global high score
-    const globalScore = localStorage.getItem('tizgun_global_high_score');
-    if (globalScore) {
-      globalHighScore.value = JSON.parse(globalScore);
-    }
   } catch {}
 });
 
@@ -116,21 +102,6 @@ function onNameChange() {
   } catch {}
 }
 
-// Function to update global high score (called from parent)
-function updateGlobalHighScore(score, name) {
-  if (score > globalHighScore.value.score) {
-    const playerName = name && name.trim() ? name.trim() : 'Anonymous';
-    globalHighScore.value = { name: playerName, score };
-    try {
-      localStorage.setItem('tizgun_global_high_score', JSON.stringify(globalHighScore.value));
-    } catch {}
-    return true; // New global high score
-  }
-  return false;
-}
-
-// Expose function to parent
-defineExpose({ updateGlobalHighScore });
 </script>
 
 <style scoped>
@@ -241,34 +212,6 @@ defineExpose({ updateGlobalHighScore });
 }
 
 
-/* Game Over Global Champion Styles */
-.global-champion {
-  background: linear-gradient(135deg, 
-    rgba(255, 215, 0, 0.15), 
-    rgba(255, 165, 0, 0.1)
-  ) !important;
-  border: 1px solid rgba(255, 215, 0, 0.4) !important;
-}
-
-.champion-details {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
-}
-
-.champion-details .champion-name {
-  font-size: 14px;
-  color: var(--fg-accent);
-  text-shadow: 0 0 8px rgba(96, 255, 166, 0.4);
-  margin-bottom: 0;
-}
-
-.champion-details .champion-score {
-  font-size: 18px;
-  color: #ffd700;
-  text-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
-}
 
 .gameover { 
   background: linear-gradient(135deg, 
